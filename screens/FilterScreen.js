@@ -1,11 +1,11 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Input, Button} from 'react-native-elements';
-import {SafeAreaView} from 'react-navigation';
+import {ScrollView} from 'react-native-gesture-handler';
 
 function FilterScreen({navigation}) {
   return (
-    <SafeAreaView>
+    <ScrollView>
       <Input
         label="Country"
         containerStyle={styles.container}
@@ -20,7 +20,7 @@ function FilterScreen({navigation}) {
         keyboardType="numeric"
       />
       <Button containerStyle={styles.apply} title="APPLY" />
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
@@ -40,9 +40,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   apply: {
-    marginStart: 90,
-    marginEnd: 90,
-    marginTop: 24,
+    width: 150,
+    marginTop: 18,
+    marginBottom: 90,
+    alignSelf: 'center',
   },
 });
 

@@ -1,103 +1,41 @@
-import React from 'react';
-import {ListItem} from 'react-native-elements';
+import React, {Component} from 'react';
+import {StyleSheet} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import * as utils from './utils';
-import FilterScreen from './FilterScreen';
-import DetailsScreen from './DetailsScreen';
-import {
-  View,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-} from 'react-native';
+
+import ListScreen from './screens/ListScreen';
+import FilterScreen from './screens/FilterScreen';
+import DetailsScreen from './screens/DetailsScreen';
 
 const Stack = createStackNavigator();
 
-const list = [
-  {location: 'Spot_01', country: 'Brasil', favorite: false},
-  {location: 'Spot_02', country: 'Spain', favorite: true},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-  {location: 'Item1', country: 'Subitem1', favorite: false},
-];
-
-function SpotList({navigation}) {
-  const keyExtractor = (item, index) => index.toString();
-  const renderItem = ({item}) => (
-    <ListItem
-      title={item.location}
-      subtitle={item.country}
-      rightIcon={utils.isFavorite(item.favorite)}
-      bottomDivider
-      onPress={() => {
-        navigation.navigate('DetailsScreen', {
-          spot: item.location,
-          country: item.country,
-          favorite: item.favorite,
-          latitude: 0,
-          longitude: 0,
-          windProb: 0,
-          whenToGo: 'N/A',
-        });
-      }}
-    />
-  );
-
-  return (
-    <View>
-      <FlatList
-        keyExtractor={keyExtractor}
-        data={list}
-        renderItem={renderItem}
-      />
-    </View>
-  );
-}
-
-class App extends React.Component {
+export default class App extends Component {
   render() {
     return (
       <NavigationContainer>
-        <Stack.Navigator>
+        <Stack.Navigator initialRouteName="ListScreen">
           <Stack.Screen
-            name="SpotList"
-            component={SpotList}
+            name="ListScreen"
+            component={ListScreen}
             options={({navigation, route}) => ({
               title: 'Kitesurfing App',
               headerRight: () => (
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('FilterScreen')}>
-                  <Image
-                    source={require('./images/filter/xxxhdpi/Filter.png')}
-                    style={styles.filterIcon}
-                  />
-                </TouchableOpacity>
+                <Icon
+                  name="filter-list"
+                  size={34}
+                  style={styles.filterIcon}
+                  onPress={() => navigation.navigate('FilterScreen')}
+                />
               ),
             })}
           />
           <Stack.Screen
             name="FilterScreen"
             component={FilterScreen}
-            options={{title: 'Filter'}}
+            options={{
+              title: 'Filter',
+            }}
           />
           <Stack.Screen name="DetailsScreen" component={DetailsScreen} />
         </Stack.Navigator>
@@ -108,10 +46,6 @@ class App extends React.Component {
 
 const styles = StyleSheet.create({
   filterIcon: {
-    marginEnd: 24,
-    width: 30,
-    height: 30,
+    marginEnd: 20,
   },
 });
-
-export default App;
