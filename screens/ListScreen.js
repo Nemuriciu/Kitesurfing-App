@@ -3,6 +3,8 @@ import {ListItem} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {
   View,
+  ScrollView,
+  Text,
   FlatList,
   ActivityIndicator,
   StyleSheet,
@@ -15,6 +17,8 @@ export default class ListScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      countryFilter: '',
+      windFilter: '',
       loading: true,
       refreshing: false,
       spotList: [],
@@ -25,8 +29,23 @@ export default class ListScreen extends Component {
     this.GetSpots();
 
     this.back = this.props.navigation.addListener('focus', () => {
+      if (!this.props.route.params) {
+        return;
+      }
+
+      console.log(this.props.route.params);
+
       this.setState({
         loading: true,
+        /* Get filter screen navigation params */
+        countryFilter: this.props.route.params.countryFilter
+          ? this.props.route.params.countryFilter
+          : '',
+        windFilter: this.props.route.params.windFilter
+          ? this.props.route.params.windFilter > 100
+            ? 100
+            : this.props.route.params.windFilter
+          : '',
       });
       this.GetSpots();
     });
@@ -38,18 +57,42 @@ export default class ListScreen extends Component {
 
   /* Fetch Spots and Favorites from API and place in spotList */
   GetSpots = async () => {
+    /* Fetch Spots */
     try {
       const response = await fetch(Constants.SPOTS_URL);
       const result = await response.json();
 
+      let l = result;
+      /* Filter results if countryFilter is non-empty string */
+      if (this.state.countryFilter !== '') {
+        l = l
+          .filter(
+            e =>
+              e.country.toLowerCase() ===
+              this.state.countryFilter.toLowerCase(),
+          )
+          .map(e => {
+            return e;
+          });
+      }
+      /* Filter results if windFilter is non-empty string */
+      if (this.state.windFilter !== '') {
+        l = l
+          .filter(e => e.probability >= this.state.windFilter)
+          .map(e => {
+            return e;
+          });
+      }
+
       this.setState({
         /* add the favorite bool field to spots */
-        spotList: result.map(spot => ({
+        spotList: l.map(spot => ({
           ...spot,
           favorite: false,
         })),
       });
 
+      /* Fetch Favorites */
       try {
         const favResponse = await fetch(Constants.FAVORITES_URL);
         const favResult = await favResponse.json();
@@ -202,21 +245,38 @@ export default class ListScreen extends Component {
     const {spotList, loading, refreshing} = this.state;
 
     if (!loading && !refreshing) {
-      return (
-        <View>
-          <FlatList
-            keyExtractor={this.keyExtractor}
-            data={spotList}
-            renderItem={this.renderItem}
+      if (spotList.length > 0) {
+        return (
+          <View>
+            <FlatList
+              keyExtractor={this.keyExtractor}
+              data={spotList}
+              renderItem={this.renderItem}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={this.onRefresh.bind(this)}
+                />
+              }
+            />
+          </View>
+        );
+      } else {
+        return (
+          <ScrollView
+            contentContainerStyle={styles.scrollView}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={this.onRefresh.bind(this)}
               />
-            }
-          />
-        </View>
-      );
+            }>
+            <View>
+              <Text style={styles.noSpotText}>No spots found.</Text>
+            </View>
+          </ScrollView>
+        );
+      }
     } else {
       return (
         <View style={styles.loadingIcon}>
@@ -235,5 +295,16 @@ const styles = StyleSheet.create({
   favoriteIcon: {
     marginStart: 8,
     marginEnd: 8,
+  },
+  scrollView: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  noSpotText: {
+    width: '100%',
+    textAlign: 'center',
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#777777',
   },
 });

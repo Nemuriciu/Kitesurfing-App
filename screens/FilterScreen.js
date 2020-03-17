@@ -1,27 +1,56 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
 import {Input, Button} from 'react-native-elements';
 import {ScrollView} from 'react-native-gesture-handler';
 
-function FilterScreen({navigation}) {
-  return (
-    <ScrollView>
-      <Input
-        label="Country"
-        containerStyle={styles.container}
-        inputContainerStyle={styles.inputContainer}
-        labelStyle={styles.label}
-      />
-      <Input
-        label="Wind Probability"
-        containerStyle={styles.container}
-        inputContainerStyle={styles.inputContainer}
-        labelStyle={styles.label}
-        keyboardType="numeric"
-      />
-      <Button containerStyle={styles.apply} title="APPLY" />
-    </ScrollView>
-  );
+export default class FilterScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      country: '',
+      windProb: '',
+    };
+  }
+
+  onChangeText = (key, val) => {
+    this.setState({[key]: val});
+  };
+
+  render() {
+    return (
+      <ScrollView>
+        <Input
+          label="Country"
+          maxLength={60}
+          onChangeText={val => this.onChangeText('country', val)}
+          containerStyle={styles.container}
+          inputContainerStyle={styles.inputContainer}
+          labelStyle={styles.label}
+        />
+        <Input
+          label="Wind Probability"
+          keyboardType="numeric"
+          maxLength={3}
+          onChangeText={val => this.onChangeText('windProb', val)}
+          containerStyle={styles.container}
+          inputContainerStyle={styles.inputContainer}
+          labelStyle={styles.label}
+        />
+        <Button
+          title="APPLY"
+          buttonStyle={styles.applyButton}
+          containerStyle={styles.apply}
+          raised
+          onPress={() =>
+            this.props.navigation.navigate('ListScreen', {
+              countryFilter: this.state.country,
+              windFilter: this.state.windProb,
+            })
+          }
+        />
+      </ScrollView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -45,6 +74,7 @@ const styles = StyleSheet.create({
     marginBottom: 90,
     alignSelf: 'center',
   },
+  applyButton: {
+    backgroundColor: '#dd5500',
+  },
 });
-
-export default FilterScreen;
