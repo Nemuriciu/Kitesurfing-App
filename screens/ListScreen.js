@@ -26,17 +26,17 @@ export default class ListScreen extends Component {
   }
 
   componentDidMount() {
-    this.GetSpots();
-
     this.back = this.props.navigation.addListener('focus', () => {
+      //console.log('Focused');
       if (!this.props.route.params) {
+        //console.log('No Params');
+        //console.log(this.state);
+        this.GetSpots();
         return;
       }
 
-      console.log(this.props.route.params);
-
+      //console.log('Params');
       this.setState({
-        loading: true,
         /* Get filter screen navigation params */
         countryFilter: this.props.route.params.countryFilter
           ? this.props.route.params.countryFilter
@@ -47,7 +47,9 @@ export default class ListScreen extends Component {
             : this.props.route.params.windFilter
           : '',
       });
+
       this.GetSpots();
+      return;
     });
   }
 
@@ -57,6 +59,8 @@ export default class ListScreen extends Component {
 
   /* Fetch Spots and Favorites from API and place in spotList */
   GetSpots = async () => {
+    this.setState({loading: true});
+
     /* Fetch Spots */
     try {
       const response = await fetch(Constants.SPOTS_URL);
@@ -177,7 +181,8 @@ export default class ListScreen extends Component {
 
     try {
       const favId = this.state.spotList[index].favoriteObj.id;
-      const response = await fetch(Constants.FAVORITES_URL + '/' + favId, {
+      //const response =
+      await fetch(Constants.FAVORITES_URL + '/' + favId, {
         method: 'DELETE',
         headers: {
           Accept: 'application/json',
@@ -187,7 +192,7 @@ export default class ListScreen extends Component {
           spot: id,
         }),
       });
-      const result = await response.json();
+      //const result = await response.json();
     } catch (error) {
       console.error(error);
     }
