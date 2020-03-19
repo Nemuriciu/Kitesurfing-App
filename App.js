@@ -6,6 +6,7 @@ import {createDrawerNavigator} from '@react-navigation/drawer';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
 import ListScreen from './screens/ListScreen';
 import FilterScreen from './screens/FilterScreen';
 import DetailsScreen from './screens/DetailsScreen';
@@ -15,6 +16,7 @@ const LoginStack = createStackNavigator();
 const Login = () => (
   <LoginStack.Navigator>
     <LoginStack.Screen name="LoginScreen" component={LoginScreen} />
+    <LoginStack.Screen name="RegisterScreen" component={RegisterScreen} />
   </LoginStack.Navigator>
 );
 

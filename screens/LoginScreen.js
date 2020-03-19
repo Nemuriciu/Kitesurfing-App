@@ -11,6 +11,7 @@ import {
   StyleSheet,
   ImageBackground,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import * as Constants from '../constants';
 
@@ -36,9 +37,7 @@ export default class LoginScreen extends Component {
 
   async storeItem(key, item) {
     try {
-      console.log(item);
       var json = await AsyncStorage.setItem(key, JSON.stringify(item));
-      console.log(json);
       return json;
     } catch (error) {
       console.log(error.message);
@@ -49,9 +48,8 @@ export default class LoginScreen extends Component {
     try {
       const result = await AsyncStorage.getItem('currentUser');
       const currentUser = JSON.parse(result);
-      //console.log(currentUser);
 
-      if (currentUser.id) {
+      if (currentUser && currentUser.id) {
         this.props.navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -101,7 +99,12 @@ export default class LoginScreen extends Component {
       const result = await response.json();
 
       let r = result
-        .filter(e => e.email.toLowerCase() === this.state.email.toLowerCase())
+        .filter(
+          e =>
+            /* check for pass match only if it exists in API */
+            e.email.toLowerCase() === this.state.email.toLowerCase() &&
+            (e.password ? e.password === this.state.pass : true),
+        )
         .map(e => {
           return e;
         });
@@ -126,7 +129,7 @@ export default class LoginScreen extends Component {
         Alert.alert('', 'Invalid email or password');
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -209,11 +212,13 @@ export default class LoginScreen extends Component {
               containerStyle={styles.buttonContainer}
               onPress={() => this.submit()}
             />
-            <Text
-              style={styles.signUp}
-              onPress={() => this.props.navigation.navigate('ListScreen')}>
-              Don't have an account yet? Sign up
-            </Text>
+            <TouchableOpacity
+              style={styles.signUpContainer}
+              onPress={() => this.props.navigation.navigate('RegisterScreen')}>
+              <Text style={styles.signUp}>
+                Don't have an account yet? Sign up
+              </Text>
+            </TouchableOpacity>
           </ScrollView>
         </ImageBackground>
       );
@@ -242,8 +247,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 275,
-    height: 275,
-    marginBottom: 24,
+    height: 200,
+    marginBottom: 80,
     alignSelf: 'center',
   },
   container: {
@@ -251,17 +256,20 @@ const styles = StyleSheet.create({
   },
   inputContainerValid: {
     borderRadius: 30,
-    borderBottomWidth: 0,
+    borderWidth: 2,
+    borderBottomWidth: 2,
     width: '80%',
     alignSelf: 'center',
+    borderColor: '#000000',
     backgroundColor: '#00000066',
   },
   inputContainerError: {
     borderRadius: 30,
-    borderWidth: 1,
-    borderColor: 'red',
+    borderWidth: 2,
+    borderBottomWidth: 2,
     width: '80%',
     alignSelf: 'center',
+    borderColor: 'red',
     backgroundColor: '#00000066',
   },
   inputText: {
@@ -291,13 +299,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  signUpContainer: {
+    marginTop: 14,
+    marginBottom: 60,
+    alignSelf: 'center',
+  },
   signUp: {
-    fontSize: 14,
-    color: '#000000',
+    fontSize: 15,
+    color: '#ffffff',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
-    marginTop: 12,
-    marginBottom: 60,
     alignSelf: 'center',
   },
 });
