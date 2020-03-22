@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {ListItem} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/AntDesign';
+import AsyncStorage from '@react-native-community/async-storage';
 import {
   View,
   ScrollView,
@@ -21,6 +22,7 @@ export default class ListScreen extends Component {
       windFilter: '',
       loading: true,
       refreshing: false,
+      networkErr: false,
       spotList: [],
     };
   }
@@ -114,12 +116,24 @@ export default class ListScreen extends Component {
 
         this.setState({
           spotList: list,
+          networkErr: false,
         });
+
+        /* Cache new data (only if not filtered) */
+        if (this.state.countryFilter === '' && this.state.windFilter === '') {
+          this.addCacheSpots();
+        }
       } catch (error) {
-        console.error(error);
+        if (error.message === 'Network request failed') {
+          /* Try to fetch spots from cache */
+          this.getCacheSpots();
+        }
       }
     } catch (error) {
-      console.error(error);
+      if (error.message === 'Network request failed') {
+        /* Try to fetch spots from cache */
+        this.getCacheSpots();
+      }
     } finally {
       this.setState({
         loading: false,
@@ -161,7 +175,7 @@ export default class ListScreen extends Component {
         spotList: l,
       });
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -194,7 +208,57 @@ export default class ListScreen extends Component {
       });
       //const result = await response.json();
     } catch (error) {
-      console.error(error);
+      console.log(error);
+    }
+  };
+
+  /* Add spotList to cache */
+  addCacheSpots = async () => {
+    try {
+      await AsyncStorage.setItem('spots', JSON.stringify(this.state.spotList));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  /* Get spotList from cache */
+  getCacheSpots = async () => {
+    try {
+      const res = await AsyncStorage.getItem('spots');
+      var spots = JSON.parse(res);
+
+      if (spots && spots.length > 0) {
+        /* Filter results if countryFilter is non-empty string */
+        if (this.state.countryFilter !== '') {
+          spots = spots
+            .filter(
+              e =>
+                e.country.toLowerCase() ===
+                this.state.countryFilter.toLowerCase(),
+            )
+            .map(e => {
+              return e;
+            });
+        }
+        /* Filter results if windFilter is non-empty string */
+        if (this.state.windFilter !== '') {
+          spots = spots
+            .filter(e => e.probability >= this.state.windFilter)
+            .map(e => {
+              return e;
+            });
+        }
+
+        this.setState({
+          spotList: spots,
+        });
+      } else {
+        this.setState({
+          networkErr: true,
+        });
+      }
+    } catch (cacheError) {
+      console.log(cacheError);
     }
   };
 
@@ -247,26 +311,10 @@ export default class ListScreen extends Component {
   );
 
   render() {
-    const {spotList, loading, refreshing} = this.state;
+    const {spotList, loading, refreshing, networkErr} = this.state;
 
     if (!loading && !refreshing) {
-      if (spotList.length > 0) {
-        return (
-          <View>
-            <FlatList
-              keyExtractor={this.keyExtractor}
-              data={spotList}
-              renderItem={this.renderItem}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={this.onRefresh.bind(this)}
-                />
-              }
-            />
-          </View>
-        );
-      } else {
+      if (networkErr) {
         return (
           <ScrollView
             contentContainerStyle={styles.scrollView}
@@ -277,10 +325,43 @@ export default class ListScreen extends Component {
               />
             }>
             <View>
-              <Text style={styles.noSpotText}>No spots found.</Text>
+              <Text style={styles.noSpotText}>No network connection.</Text>
             </View>
           </ScrollView>
         );
+      } else {
+        if (spotList.length > 0) {
+          return (
+            <View>
+              <FlatList
+                keyExtractor={this.keyExtractor}
+                data={spotList}
+                renderItem={this.renderItem}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={this.onRefresh.bind(this)}
+                  />
+                }
+              />
+            </View>
+          );
+        } else {
+          return (
+            <ScrollView
+              contentContainerStyle={styles.scrollView}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={this.onRefresh.bind(this)}
+                />
+              }>
+              <View>
+                <Text style={styles.noSpotText}>No spots found.</Text>
+              </View>
+            </ScrollView>
+          );
+        }
       }
     } else {
       return (

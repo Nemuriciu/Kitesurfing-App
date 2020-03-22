@@ -40,10 +40,11 @@ export default class LoginScreen extends Component {
       var json = await AsyncStorage.setItem(key, JSON.stringify(item));
       return json;
     } catch (error) {
-      console.log(error.message);
+      Alert.alert('', 'Login failed. Please try again.');
     }
   }
 
+  /* Get currentUser from cache */
   currentUser = async () => {
     try {
       const result = await AsyncStorage.getItem('currentUser');
@@ -60,7 +61,7 @@ export default class LoginScreen extends Component {
         this.setState({loading: false});
       }
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
     }
   };
 
@@ -129,7 +130,9 @@ export default class LoginScreen extends Component {
         Alert.alert('', 'Invalid email or password');
       }
     } catch (error) {
-      console.log(error);
+      if (error.message === 'Network request failed') {
+        Alert.alert('', 'No internet connection.');
+      }
     }
   };
 

@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View, Alert} from 'react-native';
 import {ListItem} from 'react-native-elements';
 import {ScrollView} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/AntDesign';
+import MapView from 'react-native-maps';
 
 import * as Constants from '../constants';
 
@@ -67,7 +68,7 @@ export default class DetailsScreen extends Component {
         spot: spot,
       });
     } catch (error) {
-      console.error(error);
+      Alert.alert('', 'No internet connection.');
     }
   };
 
@@ -91,7 +92,7 @@ export default class DetailsScreen extends Component {
 
     try {
       const favId = this.state.spot.favoriteObj.id;
-      const response = await fetch(Constants.FAVORITES_URL + '/' + favId, {
+      await fetch(Constants.FAVORITES_URL + '/' + favId, {
         method: 'DELETE',
         headers: {
           Accept: 'application/json',
@@ -101,14 +102,12 @@ export default class DetailsScreen extends Component {
           spot: this.state.spot.favoriteObj.spot,
         }),
       });
-      const result = await response.json();
-
       spot.favoriteObj = null;
       this.setState({
         spot: spot,
       });
     } catch (error) {
-      console.error(error);
+      Alert.alert('', 'No internet connection.');
     }
   };
 
@@ -162,6 +161,26 @@ export default class DetailsScreen extends Component {
           subtitleStyle={styles.subtitle}
           bottomDivider
         />
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: Number(this.state.spot.latitude),
+              longitude: Number(this.state.spot.longitude),
+              latitudeDelta: 1,
+              longitudeDelta: 1,
+            }}>
+            <MapView.Marker
+              style={styles.map}
+              coordinate={{
+                latitude: Number(this.state.spot.latitude),
+                longitude: Number(this.state.spot.longitude),
+              }}
+              title={this.state.spot.name}
+              description={this.state.spot.country}
+            />
+          </MapView>
+        </View>
       </ScrollView>
     );
   }
@@ -180,5 +199,15 @@ const styles = StyleSheet.create({
   favoriteIcon: {
     marginStart: 8,
     marginEnd: 18,
+  },
+  mapContainer: {
+    backgroundColor: '#ffffff',
+  },
+  map: {
+    height: 300,
+    marginStart: 42,
+    marginEnd: 42,
+    marginTop: 36,
+    marginBottom: 60,
   },
 });

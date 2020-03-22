@@ -9,6 +9,7 @@ import {
   Image,
   StyleSheet,
   ImageBackground,
+  Alert,
 } from 'react-native';
 import * as Constants from '../constants';
 
@@ -37,7 +38,7 @@ export default class RegisterScreen extends Component {
       var json = await AsyncStorage.setItem(key, JSON.stringify(item));
       return json;
     } catch (error) {
-      console.log(error.message);
+      Alert.alert('', 'Sign Up failed. Please try again.');
     }
   }
 
@@ -126,11 +127,15 @@ export default class RegisterScreen extends Component {
             }),
           );
         } catch (error) {
-          console.log(error);
+          if (error.message === 'Network request failed') {
+            Alert.alert('', 'No internet connection.');
+          }
         }
       }
     } catch (error) {
-      console.log(error);
+      if (error.message === 'Network request failed') {
+        Alert.alert('', 'No internet connection.');
+      }
     }
   };
 
